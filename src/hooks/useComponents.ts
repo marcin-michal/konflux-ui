@@ -13,7 +13,7 @@ export const useComponent = (
     data: component,
     isLoading,
     error,
-  } = useK8sWatchResource<ComponentKind>(
+  } = useK8sWatchResource<ComponentKind>( // [undefined, false, Error()];
     componentName
       ? {
           groupVersionKind: ComponentGroupVersionKind,
