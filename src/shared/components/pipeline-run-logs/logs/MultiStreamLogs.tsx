@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { Button } from '@patternfly/react-core';
 import { OutlinedPlayCircleIcon } from '@patternfly/react-icons/dist/esm/icons';
-import { TaskRunKind } from '../../../../types';
+import { TaskRunKind } from '~/types';
+import { ResourceSource } from '~/types/k8s';
 import { useScrollDirection, ScrollDirection } from '../../../hooks/scroll';
 import { LoadingInline } from '../../status-box/StatusBox';
 import { PodKind } from '../../types';
@@ -17,6 +18,7 @@ type MultiStreamLogsProps = {
   taskRun?: TaskRunKind;
   resourceName: string;
   setCurrentLogsGetter: (getter: () => string) => void;
+  source?: ResourceSource;
 };
 
 export const MultiStreamLogs: React.FC<React.PropsWithChildren<MultiStreamLogsProps>> = ({
@@ -24,6 +26,7 @@ export const MultiStreamLogs: React.FC<React.PropsWithChildren<MultiStreamLogsPr
   taskRun,
   resourceName,
   setCurrentLogsGetter,
+  source = ResourceSource.Cluster,
 }) => {
   const scrollPane = React.useRef<HTMLDivElement>();
   const completedRef = React.useRef<boolean[]>([]);
@@ -93,6 +96,7 @@ export const MultiStreamLogs: React.FC<React.PropsWithChildren<MultiStreamLogsPr
                     onComplete={handleComplete}
                     render={renderToCount >= idx}
                     autoScroll={autoScroll}
+                    source={source}
                   />
                 )
               );

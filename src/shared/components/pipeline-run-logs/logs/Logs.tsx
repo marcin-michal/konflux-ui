@@ -2,7 +2,10 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@patternfly/react-core';
 import { Base64 } from 'js-base64';
+import { FLAGS } from '~/feature-flags/flags';
+import { useIsOnFeatureFlag } from '~/feature-flags/hooks';
 import { useNamespace } from '~/shared/providers/Namespace';
+import { ResourceSource } from '~/types/k8s';
 import { commonFetchText } from '../../../../k8s';
 import { getK8sResourceURL, getWebsocketSubProtocolAndPathPrefix } from '../../../../k8s/k8s-utils';
 import { WebSocketFactory } from '../../../../k8s/web-socket/WebSocketFactory';
@@ -20,6 +23,7 @@ type LogsProps = {
   autoScroll?: boolean;
   onComplete: (containerName: string) => void;
   errorMessage?: string;
+  source: ResourceSource;
 };
 
 const Logs: React.FC<React.PropsWithChildren<LogsProps>> = ({
@@ -30,9 +34,11 @@ const Logs: React.FC<React.PropsWithChildren<LogsProps>> = ({
   render,
   autoScroll = true,
   errorMessage,
+  source,
 }) => {
   const { t } = useTranslation();
   const namespace = useNamespace();
+  const isKubearchiveEnabled = useIsOnFeatureFlag(FLAGS['kubearchive-logs'].key);
   const { name } = container;
   const { kind, metadata = {} } = resource || {};
   const { name: resName, namespace: resNamespace } = metadata;
@@ -94,8 +100,14 @@ const Logs: React.FC<React.PropsWithChildren<LogsProps>> = ({
       },
     };
     const watchURL = getK8sResourceURL(PodModel, undefined, urlOpts);
+
     if (resourceStatusRef.current === LOG_SOURCE_TERMINATED) {
-      commonFetchText(watchURL)
+      commonFetchText(
+        watchURL,
+        isKubearchiveEnabled && source === ResourceSource.Archive
+          ? { pathPrefix: 'plugins/kubearchive' }
+          : undefined,
+      )
         .then((res) => {
           if (loaded) return;
           appendMessage.current(res);
@@ -123,11 +135,12 @@ const Logs: React.FC<React.PropsWithChildren<LogsProps>> = ({
           onCompleteRef.current(name);
         });
     }
+
     return () => {
       loaded = true;
       ws && ws.destroy();
     };
-  }, [kind, name, resName, resNamespace, namespace]);
+  }, [kind, name, resName, resNamespace, namespace, source, isKubearchiveEnabled]);
 
   React.useEffect(() => {
     if (scrollToRef.current && render && autoScroll) {
