@@ -17,7 +17,8 @@ on:
 
 permissions:
   pull-requests: write
-  actions: write
+  actions: read
+  variables: write
 
 concurrency:
   group: assign-reviewers
