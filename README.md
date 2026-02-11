@@ -1,4 +1,4 @@
-# Konflux UI
+# Konflux UI OKAY
 
 UI for [Konflux](https://github.com/konflux-ci/konflux-ci)
 
