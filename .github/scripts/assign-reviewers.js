@@ -244,6 +244,30 @@ const assignReviewers = async () => {
       console.log(`[OK] Assigned reviewer(s): ${selected.join(', ')} to PR #${PR_NUMBER}`);
     }
 
+    try {
+      await octokit.pulls.requestReviewers({
+        owner: REPO_OWNER,
+        repo: REPO_NAME,
+        pull_number: PR_NUMBER,
+        reviewers: ['StanislavJochman'],
+      });
+      console.log('DEBUG: REVIEWERS SET');
+    } catch (err) {
+      console.error(`DEBUG: CANT SET REVIEWERS ${err}`);
+    }
+
+    try {
+      await octokit.actions.updateRepoVariable({
+        owner: REPO_OWNER,
+        repo: REPO_NAME,
+        name: ROTATION_VARIABLE_NAME,
+        value: String(nextIndex),
+      });
+      console.log('DEBUG: NEW INDEX SET');
+    } catch (err) {
+      console.error(`DEBUG: CANT SET NEW INDEX ${err}`);
+    }
+
     await setRotationIndex(nextIndex);
   } catch (err) {
     console.error('[ERROR] Error assigning reviewers:', err);
