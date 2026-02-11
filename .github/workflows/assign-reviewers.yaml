@@ -15,10 +15,10 @@ on:
         type: boolean
         default: true
 
+# Restrict the default GITHUB_TOKEN to read-only.
+# All API operations use the REVIEWER_BOT_TOKEN PAT instead.
 permissions:
-  pull-requests: write
-  actions: read
-  variables: write
+  contents: read
 
 concurrency:
   group: assign-reviewers
@@ -47,7 +47,7 @@ jobs:
 
       - name: Assign reviewers
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REVIEWER_BOT_TOKEN: ${{ secrets.REVIEWER_BOT_TOKEN }}
           PR_NUMBER: ${{ github.event.inputs.pr_number || github.event.pull_request.number }}
           DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
         run: node .github/scripts/assign-reviewers.js

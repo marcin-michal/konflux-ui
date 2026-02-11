@@ -10,10 +10,15 @@
  * - Rotation state persisted via GitHub repository variable
  *
  * ENVIRONMENT VARIABLES:
- * - GITHUB_TOKEN: Required - GitHub API token (needs pull-requests:write and actions:write)
+ * - REVIEWER_BOT_TOKEN: Required - Fine-grained PAT (REVIEWER_BOT_TOKEN secret)
  * - PR_NUMBER: Required - PR number to process
  * - DRY_RUN / TEST_MODE: Optional - Set to 'true' to log without assigning
  * - GITHUB_REPOSITORY: Auto-set by GitHub Actions (owner/repo format)
+ *
+ * REVIEWER_BOT_TOKEN PERMISSIONS:
+ * - Pull requests: Read and Write (read PR data, assign reviewers)
+ * - Variables: Read and Write (persist rotation index)
+ * - Metadata: Read (mandatory, auto-selected)
  */
 
 import { Octokit } from '@octokit/rest';
@@ -36,14 +41,14 @@ const REQUIRED_REVIEWERS = 2;
 const BOT_AUTHORS = ['red-hat-konflux[bot]', 'dependabot[bot]'];
 const ROTATION_VARIABLE_NAME = 'REVIEWER_ROTATION_INDEX';
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const DRY_RUN = process.env.DRY_RUN === 'true' || process.env.TEST_MODE === 'true';
+const REVIEWER_BOT_TOKEN = process.env.REVIEWER_BOT_TOKEN;
+const DRY_RUN = true; // TODO: UPDATE process.env.DRY_RUN === 'true' || process.env.TEST_MODE === 'true';
 const PR_NUMBER = process.env.PR_NUMBER ? parseInt(process.env.PR_NUMBER, 10) : null;
 const [REPO_OWNER, REPO_NAME] = (process.env.GITHUB_REPOSITORY || 'konflux-ci/konflux-ui').split(
   '/',
 );
 
-const octokit = new Octokit({ auth: GITHUB_TOKEN });
+const octokit = new Octokit({ auth: REVIEWER_BOT_TOKEN });
 
 /**
  * Picks the next N reviewers from the pool using round-robin.
@@ -144,8 +149,8 @@ const setRotationIndex = async (newIndex) => {
 
 const assignReviewers = async () => {
   try {
-    if (!GITHUB_TOKEN) {
-      throw new Error('GITHUB_TOKEN is not set');
+    if (!REVIEWER_BOT_TOKEN) {
+      throw new Error('REVIEWER_BOT_TOKEN is not set');
     }
     if (!PR_NUMBER) {
       throw new Error('PR_NUMBER is not set');
