@@ -63,11 +63,11 @@ We welcome contributions of all kinds! Follow these steps to get started:
 
 > Tip: If your PR is still a work in progress and not ready for review, mark it as a draft to let others know that it's not ready for approval yet.
 
-7. Tag reviewers in your Pull Request:
+7. Reviewers will be assigned automatically:
 
-   - Please tag at least one or two active maintainers who are responsible for reviewing PRs.
-   - You can also tag the [konflux-ui team](https://github.com/orgs/konflux-ci/teams/konflux-ui) for broader visibility if needed.
-   - If you’re unsure who to tag, check recent contributors.
+   - When you open a PR (or mark a draft as ready for review), **two reviewers are automatically assigned** using a round-robin rotation across the team.
+   - If you've already tagged a team member manually, the bot will only assign enough additional reviewers to reach 2.
+   - You can still tag the [konflux-ui team](https://github.com/orgs/konflux-ci/teams/konflux-ui) for broader visibility if needed.
    - The reviewer reviews the code. If the code is safe to run, reviewer may add `ok-to-test` label to enable the E2E tests on this PR.
 
 8. Once your PR is ready:

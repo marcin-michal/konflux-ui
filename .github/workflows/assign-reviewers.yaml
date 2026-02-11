@@ -1,0 +1,52 @@
+name: Assign Reviewers
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to assign reviewers to'
+        required: true
+        type: number
+      dry_run:
+        description: 'Log actions without assigning (dry-run)'
+        type: boolean
+        default: true
+
+permissions:
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: assign-reviewers
+
+jobs:
+  assign-reviewers:
+    runs-on: ubuntu-latest
+    # Skip draft PRs for pull_request events; workflow_dispatch handles its own checks
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: yarn add @octokit/rest
+
+      - name: Assign reviewers
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.inputs.pr_number || github.event.pull_request.number }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: node .github/scripts/assign-reviewers.js
